@@ -2,10 +2,6 @@ import telebot
 from telebot import types
 import parsing_nft
 import tokenbot
-
-
-# print(parsing_maks.get_count())
-# lalal = parsing_maks.get_count()
 bot = telebot.TeleBot(tokenbot.TOKEN)
 
 
@@ -22,6 +18,21 @@ def buttoms(message):
     markup.row(button4)
 
     bot.send_message(message.chat.id, 'It works!', reply_markup=markup)
+
+
+def access_level_check_bool(id_user: str) -> bool:
+    """Функция проверяет, есть ли Вы в списке расширенного доступаи возвращает bool"""
+    f = open('id_users.txt', 'r')
+    id_list = []
+    for i in f:
+        id_list += i.split()
+    f.close()
+    full_data_id = ', '.join(id_list)
+    if full_data_id.find(str(id_user)) == -1:
+        return True
+    else:
+        return False
+
 
 # FIXME написать корректный текст и настроить кнопку ↓
 
@@ -42,7 +53,12 @@ def send_welcome(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle(call):
-    bot.send_message(call.message.chat.id, 'Data: {}'.format(str(call.data)))
+    if call.data == '1':
+        if access_level_check_bool(call.from_user.id):
+            bot.send_message(call.message.chat.id, 'Ваш уровень доступа - базовый.')
+        else:
+            bot.send_message(call.message.chat.id, 'Ваш уровень доступа - расширенный.')
+    # bot.send_message(call.message.chat.id, 'Data: {}'.format(str(call.data)))
 
 
 # FIXME настроить команду help (туториал, как ввести owner) ↓
@@ -60,38 +76,31 @@ def send_help(message):
 @bot.message_handler(func=lambda message: True)
 def send_obrab(message):
     '''Обработка словаря с owner'''
-    flag = False
-    try:
-        owner_data = parsing_nft.get_count()  # вызов парсера
-        for search_emploers in owner_data.values():
-            if search_emploers == message.text:
-                flag = True
-                break
-
-        f = open('id_users.txt', 'r') ### Разделить проверку ввода и парсинг на две отдельные функции (
-        id_list = []
-        for i in f:
-            id_list += i.split()
-        f.close()
-        full_data_id = ', '.join(id_list)
-
-        if full_data_id.find(str(message.chat.id)) == -1:
-            if flag:
-                bot.send_message(message.chat.id, f"ты победил")
+    # level_check = access_level_check_bool(message.chat.id)
+    if access_level_check_bool(message.chat.id):  # Если у тебя базовый уровень
+        flag = False
+        try:
+            if len(str(message.text)) > 10:  # Чтобы не вызывать лишний раз парсер если owner явно не верный
+                owner_data = parsing_nft.get_count()  # вызов парсера
+                for search_emploers in owner_data.values():
+                    if search_emploers == message.text:
+                        flag = True
+                        break
+            if flag:  # Если введен верный Owner
+                bot.send_message(message.chat.id, "ты победил \nВаш уровень доступа - расширенный.")
                 # with open("index.txt", "w") as file:
                 #     for i in owner_data.items():
                 #         print(i, file=file)
                 #
-
                 with open(file='id_users.txt', mode='a', encoding='utf-8') as file:
                     file.write(f'\n{message.chat.id}')
-        elif flag and full_data_id.find(str(message.chat.id)) == -1:
-            bot.send_message(message.chat.id, "не верно введен Owner")
-        else:
-            bot.send_message(message.chat.id, "Вы уже вводили Owner")
-            # print(message.chat.id)
-    except Exception():
-        bot.send_message(message.chat.id, "Слишком частые запросы")
+            else:
+                bot.send_message(message.chat.id, "Вы не верно ввели Owner")
+        except:
+            bot.send_message(message.chat.id, "Слишком частые запросы")
+    else:  # Если у тебя расширенный доступ
+        bot.send_message(message.chat.id, "Вы уже вводили Owner \
+                            \nВаш уровень доступа - расширенный")
 
 
 bot.polling(none_stop=True)
