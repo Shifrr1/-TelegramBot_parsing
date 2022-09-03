@@ -7,7 +7,7 @@ bot = telebot.TeleBot(tokenbot.TOKEN)
 # fixme поменять текст при появлении кнопок, поменять ссылку
 
 
-def buttoms(message,cell=0):
+def buttoms(message, cell=0):
     """Вызов кнопок"""
     if message.text == "/start" or cell == "5":
         markup = types.InlineKeyboardMarkup()
@@ -30,7 +30,7 @@ def buttoms(message,cell=0):
 
 
 def access_level_check_bool(id_user: str) -> bool:
-    """Функция проверяет, есть ли Вы в списке расширенного доступаи возвращает bool"""
+    """Функция проверяет, есть ли Вы в списке расширенного доступа и возвращает bool"""
     f = open('id_users.txt', 'r')
     id_list = []
     for i in f:
@@ -46,8 +46,8 @@ def access_level_check_bool(id_user: str) -> bool:
 def parsing(message):
     """Парсинг. Если номер кошелька есть в коллекции возвращает True, иначе False"""
     if len(str(message.text)) > 10:  # Чтобы не вызывать лишний раз парсер если owner явно не верный
-        owner_data = parsing_nft.get_count()  # вызов парсера
-        for search_emploers in owner_data.values():
+        owner_data = parsing_nft.owner_data  # вызов парсера
+        for search_emploers in owner_data:
             if search_emploers == message.text:
                 with open(file='id_users.txt', mode='a', encoding='utf-8') as file:
                     file.write(f'\n{message.chat.id}')
@@ -62,11 +62,13 @@ def send_welcome(message):
     buttoms(message)  # Вызов кнопок
     # markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     # item1 = types.KeyboardButton('bv')
+    # item2 = types.KeyboardButton('https://yandex.ru')
     # markup.add(item1)
+    # markup.add(item2)
     # bot.send_message(message.chat.id, "хз ща проверим у парсера", reply_markup=markup)
 
 
-# FIXME доработать кнопку №2, вставить ссылку №3
+# FIXME добавить ссылку №3
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -100,7 +102,6 @@ def handle(call):
 @bot.message_handler(commands=['help'])
 def send_help(message):
     pass
-    # bot.send_message(message.chat.id, lalal['Jelly Man #5'])
 
 
 @bot.message_handler(func=lambda message: True)
