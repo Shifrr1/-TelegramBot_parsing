@@ -46,5 +46,4 @@ async def main() -> list:
     # print(owner_data)
 
 
-if __name__ != "__main__":
-    owner_data = asyncio.run(main())
+owner_data = asyncio.run(main())
