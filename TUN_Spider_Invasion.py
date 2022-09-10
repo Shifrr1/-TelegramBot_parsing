@@ -81,9 +81,14 @@ def password_entry(message):
             sql_users.count_password(message.chat.id)
             common_letters = set(variables.password) & set(message.text)  # Проверяем количество верных символов
             symbols = ', '.join(common_letters)
-            bot.send_message(message.chat.id, f'Пароль неверный!\
-                                              \nВерные символы: {symbols}')
-            buttoms_start(message)
+            if symbols is '':
+                bot.send_message(message.chat.id, 'Пароль неверный!\
+                                                  \nНет верных символов')
+                butoms_hack(message)
+            else:
+                bot.send_message(message.chat.id, f'Пароль неверный!\
+                                                  \nВерные символы: {symbols}')
+                butoms_hack(message)
 
 
 def change_wallet_number(message):
