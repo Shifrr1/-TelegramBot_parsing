@@ -61,7 +61,8 @@ def check_nft(msg_id):
     nft_check = sql_cur.execute(f"""SELECT id, nft
                                     FROM members
                                     WHERE id is {msg_id} AND nft is FALSE""")
-    if nft_check.fetchone():
+    nft_check = nft_check.fetchone()
+    if nft_check:
         db.close()
         return False
     db.close()
@@ -85,6 +86,51 @@ def return_wallet(msg_id):
     wallet_value = sql_cur.execute(f"""SELECT wallet
                                     FROM members
                                     WHERE id is {msg_id}""")
-    wallet_number = wallet_value.fetchone()[0] # Номер кошелька всегда один
+    wallet_number = wallet_value.fetchone()[0]  # Номер кошелька всегда один
     db.close()
     return wallet_number
+
+
+def count_password(msg_id):
+    """запись в таблицу количества неверных вводов"""
+    sql_cur, db = create_table()
+    count = sql_cur.execute(f"""SELECT count_password
+                                FROM members
+                                WHERE id is {msg_id}""")
+    sql_cur.execute(f"""UPDATE members
+                        SET count_password={count.fetchone()[0]+1}
+                        WHERE id is {msg_id}
+                        """)
+    db.commit()
+    db.close()
+
+
+def change_password(msg_id):
+    """Запись в таблицу True Если пассворд верный,
+    запись количества вводов, запись времени и даты верного ввода пароля"""
+    sql_cur, db = create_table()
+    column_values = sql_cur.execute(f"""SELECT password, count_password, data_password
+                                        FROM members
+                                        WHERE id is {msg_id}""")
+    column_values = column_values.fetchone()
+    sql_cur.execute(f"""UPDATE members
+                    SET password={True}, count_password={column_values[1]+1}, data_password="{datetime.datetime.now()}"
+                    WHERE id is {msg_id}
+                    """)
+    db.commit()
+    db.close()
+
+
+def check_password(msg_id):
+    """Если пассворд уже был введен верный возвращает True"""
+    sql_cur, db = create_table()
+    pas = sql_cur.execute(f"""SELECT password
+                                        FROM members
+                                        WHERE id is {msg_id} AND password is TRUE""")
+    pas = pas.fetchone()
+    print(pas)
+    if pas is None:
+        db.close()
+        return False
+    db.close()
+    return True

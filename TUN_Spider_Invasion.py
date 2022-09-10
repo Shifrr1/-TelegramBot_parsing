@@ -64,12 +64,23 @@ def parsing(msg):
     return False
 
 
-# FIXME Запись json true and false
 def password_entry(message):
     if message.text == variables.password:
-        bot.send_message(message.chat.id, f'Пороль:{message.text}. Верный!')
+        if sql_users.check_password(message.chat.id):
+            bot.send_message(message.chat.id, 'Вы уже вводили верынй пароль!\
+                             \nЖдите дальнейших указаний!')
+        else:
+            sql_users.change_password(message.chat.id)
+            bot.send_message(message.chat.id, f'Пороль:{message.text}. Верный!\
+                            \nЖдите дальнейших указаний!')
     else:
-        bot.send_message(message.chat.id, 'Пароль неверный!')
+        if sql_users.check_password(message.chat.id) is True:
+            bot.send_message(message.chat.id, 'Вы уже вводили верынй пароль!\
+                            \nЖдите дальнейших указаний!')
+        else:
+            sql_users.count_password(message.chat.id)
+            bot.send_message(message.chat.id, 'Пароль неверный!')
+            buttoms_start(message)
 
 
 def change_wallet_number(message):
@@ -116,7 +127,7 @@ def handle(call):
     if call.data == '5':
         msg = bot.send_message(call.message.chat.id, 'Введите новый номер кошелька!')
         bot.register_next_step_handler(msg, change_wallet_number)
-    if call.data == '7':  # Кнопка Нахад
+    if call.data == '7':  # Кнопка Назад
         buttoms_start(call.message)
     if call.data == '6':
         msg = bot.send_message(call.message.chat.id, 'Введите пороль!')
