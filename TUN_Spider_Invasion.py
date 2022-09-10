@@ -1,10 +1,9 @@
 import telebot
 from telebot import types
-import json
 import parsing_nft
 import variables
+import sql_users
 bot = telebot.TeleBot(variables.TOKEN)
-# fixme ВЫВЕСТИ ЧТЕНИЕ И ЗАПИСЬ В JSON В ОТДЕЛЬНЫЕ ФУНКЦИИ
 
 
 def buttoms_start(message):
@@ -14,79 +13,46 @@ def buttoms_start(message):
     button2 = types.InlineKeyboardButton('Взломать зашифрованный компьютер.', callback_data='2')
     button3 = types.InlineKeyboardButton('Войти в секретную базу Агентов.', callback_data='3')
     button4 = types.InlineKeyboardButton('Купить желе-колу.', callback_data='4')
+    button_url = types.InlineKeyboardButton('Посмотреть карту.', url=variables.link)  # Поменять ссылку
     button5 = types.InlineKeyboardButton('Изменить номер кошелька.', callback_data='5')
     markup.row(button1)
     markup.row(button2)
     markup.row(button3)
     markup.row(button4)
+    markup.row(button_url)
     markup.row(button5)
     bot.send_message(message.chat.id, 'It works!', reply_markup=markup)  # Поменять текст
 
 
 def butoms_hack(message):
     markup = types.InlineKeyboardMarkup()
-    button_url = types.InlineKeyboardButton('Посмотреть карту.', url=variables.link)  # Поменять ссылку
     button5 = types.InlineKeyboardButton('Ввести пароль.', callback_data='6')
     button6 = types.InlineKeyboardButton('Назад.', callback_data='7')
-    markup.row(button_url)
     markup.row(button5)
     markup.row(button6)
     bot.send_message(message.chat.id, 'Удачи!', reply_markup=markup)
 
 
-def reading_json():
-    """Функция чтения json"""
-    with open(file="id_users.json", encoding='utf-8') as write_file:
-        return json.load(write_file)
-
-
-def save_json(data):
-    """Запись в Json"""
-    with open("id_users.json", 'w', encoding='utf-8') as outfile:
-        json.dump(data, outfile, ensure_ascii=False, indent=2)
-
-
 def start_wallet(message):
-    """Функция первого ввода номера кошелька. Если файла Json нет, то создает файл"""
-    try:
-        data = reading_json()  # Чтение json
-        for i in data['members']:
-            if i['id'] == int(message.chat.id):
-                bot.send_message(message.chat.id, 'Вы уже вводили номер кошелька ')
-            else:
-                record_json(message)  # Если id  не обнаружен в файле json (добавить)
-    except FileNotFoundError:   # Если файла нет
-        record_json(message)  # Создать json
-    buttoms_start(message)  # Вызов кнопок
+    """Функция первого ввода номера кошелька. Завить в таблицу sql"""
+    if sql_users.check_id(message.chat.id):
+        bot.send_message(message.chat.id, 'Вы уже вводили номер кошелька ')
+        buttoms_start(message)
+    else:
+        sql_users.add_user(message.chat.id, message.text, parsing(message.text), False, 0, "")
+        buttoms_start(message)
 
 
 def access_level_check_bool(message):
     """Функция проверяет, есть ли Вы в списке расширенного доступа и возвращает bool"""
-    try:
-        data = reading_json()  # Чтение json
-        for i in data['members']:
-            if i['id'] == int(message.chat.id):
-                if i['HFT']:
-                    return True
-                elif parsing(i['wallet']):  # Условие нужно если пользовотель купил НФТ
-                    i["HFT"] = True
-                    save_json(data)  # Запись в json
-                    return True
+    if sql_users.check_nft(message.chat.id):
+        return True
+    parsing_nft_bool = parsing(sql_users.return_wallet(message.chat.id))
+    if parsing_nft_bool:
+        sql_users.change_nft(message.chat.id, parsing_nft_bool)
+        return True
+    else:
         return False
-    except FileNotFoundError:
-        return False
-
-
-def record_json(message, flag_pass=False):
-    """Создает и записывает новых пользователей в Json"""
-    flag_nft = parsing(message.text)  # Парсим и задаем значение ключу 'HFT' -> bool
-    try:
-        data = reading_json()  # Чтение json
-        data['members'].append({'id': message.chat.id, 'wallet': message.text, 'HFT': flag_nft, 'password': flag_pass})
-        save_json(data)  # Запись в json
-    except FileNotFoundError:
-        frame = {'members': [{'id': message.chat.id, 'wallet': message.text, 'HFT': flag_nft, 'password': flag_pass}]}
-        json.dump(frame, open('id_users.json', 'w+'), ensure_ascii=False, indent=2)
 
 
 def parsing(msg):
@@ -108,13 +74,7 @@ def password_entry(message):
 
 def change_wallet_number(message):
     """Изменить номер кошелька"""
-    data = reading_json()  # Чтение json
-    for i in data['members']:
-        if i['id'] == message.chat.id:
-            i['wallet'] = message.text
-            i["HFT"] = parsing(message.text)  # Сразуже проверяем на уровень доступа
-            break
-    save_json(data)  # Запись в json
+    sql_users.change_wallet_number(message.chat.id, message.text, parsing(message.text))
     bot.send_message(message.chat.id, 'номер кошелька изменён!')
     buttoms_start(message)
 
