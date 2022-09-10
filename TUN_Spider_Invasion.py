@@ -79,7 +79,10 @@ def password_entry(message):
                             \nЖдите дальнейших указаний!')
         else:
             sql_users.count_password(message.chat.id)
-            bot.send_message(message.chat.id, 'Пароль неверный!')
+            common_letters = set(variables.password) & set(message.text)  # Проверяем количество верных символов
+            symbols = ', '.join(common_letters)
+            bot.send_message(message.chat.id, f'Пароль неверный!\
+                                              \nВерные символы: {symbols}')
             buttoms_start(message)
 
 
