@@ -60,9 +60,9 @@ def check_nft(msg_id):
     sql_cur, db = create_table()
     nft_check = sql_cur.execute(f"""SELECT id, nft
                                     FROM members
-                                    WHERE id is {msg_id} AND nft is FALSE""")
+                                    WHERE id is {msg_id} AND nft is TRUE""")
     nft_check = nft_check.fetchone()
-    if nft_check:
+    if nft_check is None:
         db.close()
         return False
     db.close()
@@ -86,9 +86,13 @@ def return_wallet(msg_id):
     wallet_value = sql_cur.execute(f"""SELECT wallet
                                     FROM members
                                     WHERE id is {msg_id}""")
-    wallet_number = wallet_value.fetchone()[0]  # Номер кошелька всегда один
-    db.close()
-    return wallet_number
+    try:
+        wallet_number = wallet_value.fetchone()[0]  # Номер кошелька всегда один
+        db.close()
+        return wallet_number
+    except BaseException:
+        db.close()
+        return None
 
 
 def count_password(msg_id):
@@ -128,7 +132,6 @@ def check_password(msg_id):
                                         FROM members
                                         WHERE id is {msg_id} AND password is TRUE""")
     pas = pas.fetchone()
-    print(pas)
     if pas is None:
         db.close()
         return False
