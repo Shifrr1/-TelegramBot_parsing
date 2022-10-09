@@ -1,0 +1,12 @@
+[Unit]
+Description=TON_bot
+
+[Service]
+ExecStart=/usr/bin/python3 /home/orangepi/TUN_Spider_Invasion.py
+User=orangepi 
+Type=simple
+SyslogIdentifier=TON_bot
+SyslogFacility=daemon
+ 
+[Install]
+WantedBy=network-online.target

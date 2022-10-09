@@ -18,7 +18,7 @@ def key_board_start(message, msg):
     markup.row(button1, button2)
     markup.row(button3, button4)
     markup.row(button_url, button5)
-    bot.send_message(message.chat.id, msg, reply_markup=markup)  # Поменять текст
+    bot.send_message(message.chat.id, msg, reply_markup=markup)
 
 
 def key_buttons_hack(message, msg):
@@ -38,18 +38,13 @@ def key_buttons_change_wallet(message, msg):
     bot.send_message(message.chat.id, msg, reply_markup=markup)
 
 
-def inline_button_carat(message, msg):
+def inline_button(message, msg):
     """Инлайн кнопка перехода на карту"""
     markup = types.InlineKeyboardMarkup()
-    button_url = types.InlineKeyboardButton('Нажмите на кнопку для перехода на карту.', url=variables.link)
-    markup.row(button_url)
-    bot.send_message(message.chat.id, msg, reply_markup=markup)
-
-
-def inline_button_colla_jelly(message, msg):
-    """Инлайн кнопка для перехода на маркет"""
-    markup = types.InlineKeyboardMarkup()
-    button_url = types.InlineKeyboardButton('Нажмите на кнопку для покупки желе-колы.', url=variables.link)
+    if msg == '🗺Посмотреть карту.':
+        button_url = types.InlineKeyboardButton('Нажмите на кнопку для перехода на карту.', url=variables.link_map)
+    else:
+        button_url = types.InlineKeyboardButton('Нажмите на кнопку для покупки желе-колы.', url=variables.link_score)
     markup.row(button_url)
     bot.send_message(message.chat.id, msg, reply_markup=markup)
 
@@ -140,7 +135,6 @@ def send_help(message):
     pass
 
 
-# Fixme задать логику для непонятного ввода текста
 @bot.message_handler(func=lambda message: True)
 def send_obrab(message):
     """Обработка сообщений"""
@@ -166,9 +160,9 @@ def send_obrab(message):
     elif message.text == 'Назад.':  # Кнопка Назад
         key_board_start(message, 'Назад.')
     elif message.text == '🗺Посмотреть карту.':
-        inline_button_carat(message, '🗺Посмотреть карту.')
+        inline_button(message, '🗺Посмотреть карту.')
     elif message.text == '🧉Купить желе-колу.':
-        inline_button_colla_jelly(message, '🧉Купить желе-колу.')
+        inline_button(message, '🧉Купить желе-колу.')
     else:
         password_entry(message)
 
