@@ -4,9 +4,10 @@
 ![](https://travis-ci.org/gaborantal/git-log-parser.svg?branch=master&amp;status=passed)
 
 ## Описание проекта
-Бот предназначен для NFT игры проекта: "Ton Usual News".
+Бот предназначен для NFT игры проекта: "Ton Usual News".                                                      
 При первом запуске бота, нужно ввести номер кошелька TON
-![start.png](attachment:start.png)
+<img src=https://user-images.githubusercontent.com/69916467/195175639-07e539c6-3304-42cf-8beb-a4e5b6f6af22.png width="300">
+
 
 ## Как развернуть
 1. Склонируйте репозиторий: ```https://github.com/Shifrr1/-TelegramBot_parsing.git```.
